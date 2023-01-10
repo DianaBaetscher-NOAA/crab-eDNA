@@ -1,0 +1,36 @@
+---
+title: "BASIS data DY-22"
+output: html_notebook
+---
+
+10 January 2023
+
+Which stations do we have that match up with Jared Weems zooplankton data?
+
+
+```{r}
+library(readxl)
+library(tidyverse)
+```
+
+
+```{r}
+sta <- read_xlsx("../data/BASIS_22_stations.xlsx")
+```
+
+
+Change the format of that label variable - there are different numbers of elements so this gets messy.
+
+```{r}
+sta %>%
+  separate(sample_label, into = c("Cruise", "Num", "station", "x", "y", "depth", "replicate"), remove = F) %>%
+  mutate(depth = ifelse(str_detect(x, "m"), x, depth)) %>%
+  mutate(depth = ifelse(str_detect(y, "m"), y, depth)) %>%
+  mutate(ctd = ifelse(str_detect(sample_label, "CTD"), x, NA)) %>%
+  mutate(sample_type = ifelse(str_detect(sample_label, "blank"), "field_blank", "sample")) %>%
+  mutate(sample_type = ifelse(str_detect(sample_label, "Extraction"), "extraction_blank", sample_type)) %>%
+  select(eDNA_ID, station, depth, ctd, sample_type) %>%
+  arrange(station) %>%
+  filter(sample_type == "sample")
+```
+
